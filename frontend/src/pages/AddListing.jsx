@@ -5,8 +5,10 @@ import {
   Upload, X, MapPin, ChevronLeft,
   CheckCircle, AlertCircle, Navigation
 } from 'lucide-react';
+import { useToast, ToastContainer } from '../components/common/Toast';
 
 const AddListing = () => {
+  const { toasts, showToast, removeToast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -70,7 +72,18 @@ const AddListing = () => {
   }, [id, isEdit]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Validasi real-time untuk deposit vs harga
+    if (name === 'deposit_amount' || name === 'price_per_day') {
+      const price = name === 'price_per_day' ? parseFloat(value) : parseFloat(formData.price_per_day);
+      const deposit = name === 'deposit_amount' ? parseFloat(value) : parseFloat(formData.deposit_amount);
+
+      if (price > 0 && deposit > price * 30) {
+        showToast('Peringatan: Deposit sangat tinggi (lebih dari 30x harga sewa harian).', 'warning');
+      }
+    }
   };
 
   const handlePhotoChange = (e) => {
@@ -128,8 +141,22 @@ const AddListing = () => {
     setError('');
     setSuccess('');
 
+    // Validasi lokal sebelum submit
+    if (!formData.title || !formData.category || !formData.price_per_day || !formData.deposit_amount) {
+      showToast('Harap lengkapi semua field wajib.', 'warning');
+      return;
+    }
+
     if (!isEdit && photos.length === 0) {
+      showToast('Upload minimal 1 foto barang.', 'warning');
       setError('Upload minimal 1 foto barang.');
+      return;
+    }
+
+    const price = parseFloat(formData.price_per_day);
+    const deposit = parseFloat(formData.deposit_amount);
+    if (deposit > price * 30) {
+      showToast('Gagal: Deposit tidak boleh melebihi 30x harga sewa harian.', 'error');
       return;
     }
 
@@ -148,21 +175,36 @@ const AddListing = () => {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setSuccess('Listing berhasil diperbarui!');
+        showToast('Listing berhasil diperbarui!', 'success');
       } else {
         await API.post('/listings/', data, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setSuccess('Listing berhasil ditambahkan!');
+        showToast('Listing berhasil ditambahkan!', 'success');
       }
       setTimeout(() => navigate('/my-listings'), 2000);
     } catch (err) {
       const data = err.response?.data;
-      setError(
-        data?.detail ||
-        data?.title?.[0] ||
-        data?.non_field_errors?.[0] ||
-        'Gagal menyimpan listing.'
-      );
+      let errorMsg = 'Gagal menyimpan listing.';
+      if (data) {
+        if (typeof data === 'string') {
+          errorMsg = data;
+        } else if (data.deposit_amount) {
+          errorMsg = `Deposit: ${Array.isArray(data.deposit_amount) ? data.deposit_amount[0] : data.deposit_amount}`;
+        } else if (data.detail) {
+          errorMsg = data.detail;
+        } else if (data.non_field_errors) {
+          errorMsg = data.non_field_errors[0];
+        } else {
+          // Ambil error pertama dari field manapun
+          const firstKey = Object.keys(data)[0];
+          const firstVal = data[firstKey];
+          errorMsg = Array.isArray(firstVal) ? `${firstKey}: ${firstVal[0]}` : `${firstKey}: ${firstVal}`;
+        }
+      }
+      setError(errorMsg);
+      showToast(errorMsg, 'error');
     } finally {
       setLoading(false);
     }
@@ -184,6 +226,7 @@ const AddListing = () => {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 mb-6 transition"

@@ -27,6 +27,14 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+const formatDistance = (km) => {
+  if (km === null) return null;
+  if (km < 1) {
+    return `${(km * 1000).toFixed(0)} m`;
+  }
+  return `${km.toFixed(1)} km`;
+};
+
 const ListingCard = ({ item }) => (
   <Link to={`/listings/${item.id}`} className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition shadow-sm group">
     <div className="h-40 bg-gray-50 flex items-center justify-center overflow-hidden">
@@ -55,12 +63,9 @@ const ListingCard = ({ item }) => (
       </div>
       {item.distance !== undefined && item.distance !== null && (
         <div className="flex items-center gap-1 mt-1">
-          <Navigation size={11} className="text-emerald-500 flex-shrink-0" />
-          <span className="text-xs text-emerald-500 font-medium">
-            {item.distance < 1
-              ? `${(item.distance * 1000).toFixed(0)} m dari kamu`
-              : `${item.distance.toFixed(1)} km dari kamu`
-            }
+          <Navigation size={11} className="text-green-700 flex-shrink-0" />
+          <span className="text-xs font-medium text-green-700">
+            {formatDistance(item.distance)} dari lokasimu
           </span>
         </div>
       )}
