@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+media/
+staticfiles/
+db.sqlite3
+.vscode/
+.DS_Store
+Thumbs.db
+node_modules/
+frontend/node_modules/
+frontend/dist/
