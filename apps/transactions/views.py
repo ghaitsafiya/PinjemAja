@@ -78,8 +78,12 @@ class TransactionViewSet(viewsets.ModelViewSet):
             )
         transaction.status = 'active'
         transaction.active_at = timezone.now()
-        transaction.listing.status = 'borrowed'
-        transaction.listing.save()
+
+        # Bug 1: Ensure listing status is updated
+        listing = transaction.listing
+        listing.status = 'borrowed'
+        listing.save()
+
         transaction.save()
         Notification.objects.create(
             recipient=transaction.borrower,
@@ -300,6 +304,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def verify(self, request, pk=None):
+        from django.shortcuts import get_object_or_404
+        from django.core.exceptions import ValidationError
 
         if not request.user.is_staff:
             return Response(
@@ -307,7 +313,13 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        payment = Payment.objects.get(pk=pk)
+        try:
+            payment = get_object_or_404(Payment, pk=pk)
+        except (ValidationError, ValueError):
+            return Response(
+                {'error': 'ID Pembayaran tidak valid.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         payment.status = 'success'
         payment.verified_at = timezone.now()

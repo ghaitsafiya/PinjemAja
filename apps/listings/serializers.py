@@ -64,16 +64,14 @@ class ListingSerializer(serializers.ModelSerializer):
             deposit = self.instance.deposit_amount
 
         if price is not None and deposit is not None:
-            # Deposit maksimal = 10x harga sewa harian
-            max_deposit = price * 10
+            # Deposit maksimal = 50x harga sewa harian (Berdasarkan Bug 4, diperlonggar untuk barang elektronik mahal)
+            max_deposit = price * 50
 
             if deposit > max_deposit:
                 raise serializers.ValidationError({
                     'deposit_amount': (
-                        f'Deposit maksimal adalah 10x harga sewa harian '
-                        f'(Rp {max_deposit:,.0f}). '
-                        f'Jika barang bernilai sangat tinggi, sebaiknya '
-                        f'sesuaikan harga sewa harian.'
+                        f'Deposit maksimal adalah 50x harga sewa harian '
+                        f'(Rp {max_deposit:,.0f}).'
                     )
                 })
 
