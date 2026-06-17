@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Search, Bell, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import Logo from './Logo';
 import API from '../../services/api';
 
 const Navbar = ({ onMenuClick }) => {
@@ -42,6 +43,9 @@ const Navbar = ({ onMenuClick }) => {
         >
           <Menu size={22} />
         </button>
+        <div className="lg:hidden">
+          <Logo size={28} withText={false} />
+        </div>
         <div className="relative hidden md:block">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
