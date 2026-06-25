@@ -13,11 +13,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Transaction.objects.none()
+
         user = self.request.user
+
         if user.is_staff:
             return Transaction.objects.all().select_related(
                 'listing', 'listing__owner', 'borrower'
             )
+
         return Transaction.objects.filter(
             Q(borrower=user) | Q(listing__owner=user)
         ).select_related(
