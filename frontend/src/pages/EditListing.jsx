@@ -138,7 +138,7 @@ const EditListing = () => {
           <div className="flex flex-wrap gap-3">
             {existingPhotos.map((photo, idx) => (
               <div key={idx} className="relative w-24 h-24">
-                <img src={`http://localhost:8000${photo.photo}`} alt=""
+                <img src={`${import.meta.env.VITE_MEDIA_URL || 'http://localhost:8000'}${photo.photo}`} alt=""
                   className="w-full h-full object-cover rounded-xl border border-gray-100" />
                 <span className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1.5 rounded">
                   Ada

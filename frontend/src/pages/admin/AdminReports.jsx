@@ -249,7 +249,7 @@ const AdminReports = () => {
             <p className="text-xs text-blue-500 mt-0.5 leading-relaxed">
               Untuk sengketa barang rusak atau tidak dikembalikan, hubungi kedua pihak melalui 
               kontak WhatsApp yang terdaftar dan selesaikan melalui admin panel Django di{' '}
-              <a href="http://localhost:8000/admin" target="_blank" rel="noreferrer"
+              <a href="${import.meta.env.VITE_ADMIN_URL || 'http://localhost:8000/admin'}" target="_blank" rel="noreferrer"
                 className="underline font-medium">
                 localhost:8000/admin
               </a>
