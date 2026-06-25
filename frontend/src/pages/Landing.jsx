@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/common/Logo';
 import {
   Package, Shield, Star, Clock,
   ArrowRight, Search, ArrowLeftRight,
@@ -52,10 +53,7 @@ const Landing = () => {
       {/* Navbar */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-gray-800">PinjemAja</h1>
-            <p className="text-xs text-gray-400">Sharing Economy Platform</p>
-          </div>
+          <Logo size={36} />
           <div className="flex items-center gap-3">
             <Link
               to="/login"

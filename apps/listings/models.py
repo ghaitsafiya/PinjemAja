@@ -55,14 +55,14 @@ class Listing(models.Model):
     )
     campus_location = models.CharField(max_length=200)
     latitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
+        max_digits=12,
+        decimal_places=8,
         null=True,
         blank=True
     )
     longitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
+        max_digits=12,
+        decimal_places=8,
         null=True,
         blank=True
     )

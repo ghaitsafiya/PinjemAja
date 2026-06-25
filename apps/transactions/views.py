@@ -49,10 +49,22 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 {'error': 'Transaksi tidak dalam status menunggu konfirmasi.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        # Tolak otomatis transaksi pending lain untuk listing yang sama
+        Transaction.objects.filter(
+            listing=transaction.listing,
+            status='pending'
+        ).exclude(id=transaction.id).update(status='rejected')
+        
         transaction.status = 'confirmed'
         transaction.confirmed_at = timezone.now()
+        
+        # Langsung tandai listing tidak tersedia
+        transaction.listing.status = 'borrowed'
+        transaction.listing.save()
+        
         transaction.save()
-        # Notifikasi ke penyewa (FR-31)
+        
         Notification.objects.create(
             recipient=transaction.borrower,
             notification_type='confirmed',
@@ -280,25 +292,31 @@ class PaymentViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
+        from apps.accounts.models import User
+
         transaction = serializer.validated_data['transaction']
+        amount = transaction.total_rent + transaction.deposit_amount
+        payment = serializer.save(amount=amount, status='pending')
 
-        amount = (
-            transaction.total_rent +
-            transaction.deposit_amount
-        )
-
-        payment = serializer.save(
-            amount=amount,
-            status='pending'
-        )
-
+        # Notifikasi ke penyedia
         Notification.objects.create(
             recipient=transaction.listing.owner,
             notification_type='payment_uploaded',
             title='Bukti Pembayaran Dikirim',
-            message=f'{transaction.borrower.full_name} telah mengupload bukti pembayaran.',
+            message=f'{transaction.borrower.full_name} telah mengupload bukti pembayaran untuk "{transaction.listing.title}".',
             transaction=transaction
         )
+
+        # Notifikasi ke semua admin
+        admins = User.objects.filter(is_staff=True)
+        for admin in admins:
+            Notification.objects.create(
+                recipient=admin,
+                notification_type='payment_uploaded',
+                title='Pembayaran Menunggu Verifikasi',
+                message=f'{transaction.borrower.full_name} mengupload bukti bayar untuk "{transaction.listing.title}". Silakan verifikasi.',
+                transaction=transaction
+            )
 
         return payment
 
