@@ -11,7 +11,7 @@ from apps.notifications.models import Notification
 class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
     permission_classes = [permissions.IsAuthenticated]
-
+    
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Transaction.objects.none()
@@ -290,6 +290,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Payment.objects.none()
+
         if self.request.user.is_staff:
             return Payment.objects.all()
         return Payment.objects.filter(
