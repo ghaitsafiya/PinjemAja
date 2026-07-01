@@ -11,3 +11,4 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Static files - WhiteNoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_DIRS = []  # ← kosongkan, /app/static tidak ada di production
